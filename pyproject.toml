@@ -1,0 +1,390 @@
+[project]
+name = "polyquery"
+dynamic = ["version"]
+description = 'A framework-agnostic web interface for administering SQLAlchemy models'
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = ["sqlalchemy", "litestar", "flask", "fastapi", "sanic"]
+authors = [{ name = "Jacob Coffee", email = "jacob@z7x.org" }]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Web Environment",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Software Development",
+  "Typing :: Typed",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "Topic :: Database",
+  "Topic :: Database :: Database Engines/Servers",
+]
+dependencies = ["advanced-alchemy>=0.2.2,<0.9.0"]
+
+[project.optional-dependencies]
+# TODO: determine if wtforms has specific needs per framework
+#   Also determine if frameworks support other templating engines like MiniJinja or Mako
+sanic = ["sanic>=23.6.0", "sanic-wtf >=3.1, <3.2", "jinja2"]
+flask = ["flask>=3.0.0", "wtforms >=3.1, <3.2", "jinja2"]
+quart = ["quart>=0.19.0", "wtforms >=3.1, <3.2", "jinja2"]
+# -- Development
+dev-test = [
+  "pytest>=7.4.3",
+  "coverage>=7.3.2",
+  "pytest-benchmark>=4.0.0",
+  "pytest-cov>=4.1.0",
+  "pytest-dotenv>=0.5.2",
+  "pytest-mock>=3.12.0",
+  "hypothesis>=6.92.0",
+  "pytest-asyncio>=0.23.2",
+]
+dev-docs = [
+  "sphinx>=7.2.6",
+  "sphinx-autobuild>=2021.3.14",
+  "sphinx-copybutton>=0.5.2",
+  "shibuya",
+  "sphinx-click>=5.1.0",
+  "sphinx-toolbox>=3.5.0",
+  "autodoc-pydantic>=2.0.1",
+  "sphinxcontrib-mermaid>=0.9.2",
+  "sphinx-design>=0.5.0",
+  "sphinx-sqlalchemy>=0.2.0",
+  "sphinx-togglebutton",
+]
+dev-lint = [
+  "codespell>=2.2.6",
+  "mypy>=1.7.1",
+  "pre-commit>=3.6.0",
+  "pytailwindcss>=0.2.0",
+  "sourcery>=1.14.0",
+  "pre-commit>=3.3.3",
+  "pyright>=1.1.339",
+]
+
+[project.urls]
+litestar = ["litestar[sqlalchemy]<2.0.0"]
+fastapi = ["fastapi>=0.101.0", "wtforms >=3.1, <3.2", "jinja2"]
+starlette = ["starlette>=0.15.0", "wtforms >=3.1, <3.2", "jinja2"]
+Source = "https://github.com/JacobCoffee/polyquery"
+Issues = "https://github.com/JacobCoffee/polyquery/issues"
+Documentation = "https://docs.polyquery.app/"
+Changelog = 'https://docs.polyquery.app/latest/changelog/'
+Funding = 'https://github.com/sponsors/JacobCoffee'
+Discord = 'https://discord.gg/ZVG8hN6RrJ'
+Twitter = 'https://twitter.com/_scriptr'
+Reddit = 'https://reddit.com/monorepo'
+Youtube = 'https://www.youtube.com/@monorepo'
+
+[build-system]
+requires = ["hatchling<=1.23.0", "nodeenv"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/polyquery/__metadata__.py"
+
+[tool.hatch.envs.default]
+uv = true
+dependencies = ["coverage[toml]>=6.5", "pytest"]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = ["- coverage combine", "coverage report"]
+cov = ["test-cov", "cov-report"]
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+[tool.hatch.envs.types]
+dependencies = ["mypy>=1.0.0"]
+
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/polyquery tests}"
+
+[tool.hatch.envs.hatch-test.extra-scripts]
+pip = "{env:HATCH_UV} pip {args}"
+
+[tool.coverage.run]
+source_pkgs = ["polyquery", "tests"]
+branch = true
+parallel = true
+omit = ["src/polyquery/__about__.py"]
+
+[tool.coverage.paths]
+polyquery = ["src/polyquery", "*/polyquery/src/polyquery"]
+tests = ["tests", "*/polyquery/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
+
+[tool.codespell]
+quiet-level = 3
+ignore-words-list = "selectin, alog"
+skip = "package-lock.json, *.svg, docs/changelog.rst"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+filterwarnings = [
+  "ignore::DeprecationWarning:pkg_resources.*",
+  "ignore::DeprecationWarning:sphinxcontrib",
+]
+
+[tool.pyright]
+include = ["src/", "tests"]
+disableBytesTypePromotions = true
+exclude = ["tools", "docs"]
+pythonVersion = "3.12"
+reportOptionalMemberAccess = false
+reportUnknownMemberType = false
+reportGeneralTypeIssues = true
+
+[tool.mypy]
+namespace_packages = true
+disallow_any_generics = false
+disallow_incomplete_defs = true
+disallow_untyped_decorators = false
+disallow_untyped_defs = true
+disallow_subclassing_any = false
+exclude = '''(?x)(
+^build/
+|^dist/
+|^.venv/
+|^node_modules/
+|^migrations/
+)
+'''
+implicit_reexport = false
+plugins = ['pydantic.mypy']
+show_error_codes = true
+strict = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = [
+  "sqlalchemy.*",
+  "saq.*",
+  "uvicorn.*",
+  "aiohttp.*",
+  "jsbeautifier",
+  "jsbeautifier.*",
+  "re2.*",
+  "uvloop",
+  "uvloop.*",
+]
+
+[[tool.mypy.overrides]]
+module = ["app.lib.db.migrations.*"]
+ignore_errors = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
+
+[tool.slotscheck]
+strict-imports = false
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "ANN101",
+  "ANN102",
+  "ANN401",
+  "PLR0913",
+  "RUF012",
+  "COM812",
+  "ISC001",
+  "ERA001",
+  "TD",
+  "FIX002",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = [
+  "classmethod",
+  "pydantic.validator",
+  "pydantic.root_validator",
+  "pydantic.field_validator",
+  "sqlalchemy.ext.declarative.declared_attr",
+  "sqlalchemy.orm.declared_attr.directive",
+  "sqlalchemy.orm.declared_attr",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/*.*" = [
+  "ANN101",
+  "ANN401",
+  "ANN102",
+  "TD",
+  "FIX002",
+  "FBT001", # Boolean typed positional argument in function definition
+  "FBT002", # Boolean default positional argument in function definition
+  "FBT003", # Boolean Boolean default positional argument in function definition
+  "B008",   # Do not perform function calls in argument defaults
+]
+"src/**/*.*" = ["PLR0913", "SLF001"]
+"src/server/lib/db/base.py" = ["E501"]
+"src/server/lib/db/migrations/versions/*.*" = ["D", "INP", "PGH", "N999"]
+"tests/**/*.*" = [
+  "S101",
+  "D",
+  "ARG",
+  "PGH",
+  "B",
+  "FBT",
+  "PTH",
+  "A",
+  "TCH",
+  "DTZ",
+  "TRY",
+  "EM",
+  "S",
+  "N",
+  "SIM",
+  "PLR",
+  "BLE",
+  "RSE",
+  "C901",
+  "PLW",
+  "G",
+  "PIE",
+  "RUF012",
+  "FA",
+  "ANN",
+  "SLF",
+  "PT",
+  "INP",
+  "TD",
+  "FIX",
+  "FBT",
+  "PLR0913", # too many arguments
+  "PT",
+  "PLR2004",
+  "TID252",
+  "T",
+]
+"docs/**/*.*" = [
+  "S",
+  "B",
+  "DTZ",
+  "A",
+  "TCH",
+  "ERA",
+  "D",
+  "RET",
+  "E731",
+  "RUF012",
+  "FA100",
+  "ARG001",
+]
+"docs/conf.py" = ["FIX002", "ARG001", "INP001"]
+"tools/**/*.*" = ["D", "ARG", "EM", "TRY", "G", "FBT", "INP"]
+
+[tool.git-cliff.changelog]
+header = """
+=========
+Changelog
+=========\n
+All commits to this project will be documented in this file.\n
+"""
+body = """
+{% if version %}\
+    `Release [v{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }} <https://github.com/JacobCoffee/polyquery/releases/tag/v{{ version | trim_start_matches(pat="v") }}>`_
+    ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    * `See All commits in v{{ version | trim_start_matches(pat="v") }} <https://github.com/JacobCoffee/polyquery/commits/v{{ version | trim_start_matches(pat="v") }}>`_
+{% else %}\
+    [unreleased]
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+{% endif %}\
+{% if version and previous %}\
+    {% if previous.commit_id %}
+        `{{ previous.commit_id | truncate(length=7, end="") }} <https://github.com/JacobCoffee/polyquery/commit/{{ previous.commit_id }}>`_ ... \
+        `{{ commit_id | truncate(length=7, end="") }} <https://github.com/JacobCoffee/polyquery/commit/{{ commit_id }}>`_ \
+        | `See diff for {{ version }} <https://github.com/JacobCoffee/polyquery/compare/{{ previous.commit_id }}...{{ commit_id }}>`_
+    {% endif %}\
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+    {{ group | upper_first }}
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    {% for commit in commits %}
+        * (`{{ commit.id | truncate(length=7, end="") }} <https://github.com/JacobCoffee/polyquery/commit/{{ commit.id }}>`_) {% if commit.breaking %}[**breaking**] {% endif %} - {{ commit.message | upper_first }} ({{ commit.author.name }})\
+          {% for footer in commit.footers -%}
+            , {{ footer.token }}{{ footer.separator }}{{ footer.value }}\
+          {% endfor %}\
+    {% endfor %}
+{% endfor %}\n
+"""
+trim = true
+footer = """
+Polyquery Changelog
+"""
+sanic = ["sanic"]
+#postprocessors = [{ pattern = "`", replace = "``" }]
+
+[tool.git-cliff.git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+commit_parsers = [
+  { message = "^feat", group = "Features" },
+  { message = "^fix", group = "Bug Fixes" },
+  { message = "^doc", group = "Documentation" },
+  { message = "^perf", group = "Performance" },
+  { message = "^refactor", group = "Refactor" },
+  { message = "^style", group = "Styling" },
+  { message = "^test", group = "Testing" },
+  { message = "^chore\\(release\\): prepare for", skip = true },
+  { message = "^chore", group = "Miscellaneous Tasks" },
+  { body = ".*security", group = "Security" },
+]
+commit_preprocessors = [
+  { pattern = "``", replace = "DOUBLEBACKTICK" },
+  { pattern = "`", replace = "``" },
+  { pattern = "DOUBLEBACKTICK", replace = "``" },
+]
+protect_breaking_commits = false
+filter_commits = false
+tag_pattern = "v[0-9]*"
+skip_tags = "v0.1.0-beta.1"
+ignore_tags = ""
+topo_order = false
+sort_commits = "oldest"
+link_parsers = [
+  { pattern = "\\(#(\\d+)\\)", href = "https://github.com/JacobCoffee/polyquery/issues/$1" },
+]
